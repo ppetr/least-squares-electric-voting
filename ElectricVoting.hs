@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wall #-}
 import Control.Arrow
 import Data.Hashable (Hashable(..))
 import Data.HashMap.Strict (HashMap)
@@ -51,48 +52,27 @@ size (IndexedMonoid m) = M.size m
 indices :: (Hashable i) => IndexedMonoid i m -> [i]
 indices (IndexedMonoid m) = M.keys m
 
-
-sumEdges' :: (Hashable a, Eq a, Num n)
-         => [(a, [(a, n)], n)] -> IndexedMonoid a (IndexedMonoid a (Sum n), (Sum n))
-sumEdges' = foldMap (\(c, ls, r) -> insert c (foldMap (uncurry insert . second Sum) ls, Sum r))
+type LinearSystem a n = IndexedMonoid a (IndexedMonoid a (Sum n), (Sum n))
 
 sumEdges :: (Hashable a, Eq a, Num n)
-         => [(a, [(a, n)], n)] -> HashMap a (HashMap a n, n)
-sumEdges =
-    M.fromListWith (\(h1, l1) (h2, l2) -> (M.unionWith (+) h1 h2, l1 + l2))
-    . map (\(v, rs, l) -> (v, (M.fromListWith (+) rs, l)))
+         => [(a, [(a, n)], n)] -> LinearSystem a n
+sumEdges = foldMap (\(c, ls, r) -> insert c (foldMap (uncurry insert . second Sum) ls, Sum r))
 
 
-equations' :: (Hashable a, Eq a)
-           => [a] -> IndexedMonoid a (IndexedMonoid a (Sum Double), (Sum Double))
-           -> (Matrix Double, Matrix Double)
-equations' is m =
+equations :: (Hashable a, Eq a)
+          => [a] -> LinearSystem a Double
+          -> (Matrix Double, Matrix Double)
+equations is m =
   ( (n >< n) [ getSum $ ilookup col (fst (ilookup row m))
              | row <- is, col <- is ]
   , (n >< 1) [ getSum $ snd (ilookup row m) | row <- is ])
   where
     n = size m
 
-equations :: (Hashable a, Eq a)
-          => [a] -> HashMap a (HashMap a Double, Double)
-          -> (Matrix Double, Matrix Double)
-equations indices m =
-  ( (n >< n) [ findWithDefault 0 col (fst (findWithDefault (M.empty, 0) row m))
-             | row <- indices, col <- indices ]
-  , (n >< 1) [ snd (findWithDefault (M.empty, 0) row m) | row <- indices ])
-  where
-    n = M.size m
-    findWithDefault v k = fromMaybe v . M.lookup k
-
-solve' :: (Hashable a, Eq a) => IndexedMonoid a (IndexedMonoid a (Sum Double), (Sum Double)) -> [(a, Double)]
-solve' m = sortBy (comparing snd) . zip is . toList . flatten . uncurry linearSolveSVD . equations' is $ m
+solve :: (Hashable a, Eq a) => LinearSystem a Double -> [(a, Double)]
+solve m = sortBy (comparing snd) . zip is . toList . flatten . uncurry linearSolveSVD . equations is $ m
   where
     is = indices m
-
-solve :: (Hashable a, Eq a) => HashMap a (HashMap a Double, Double) -> [(a, Double)]
-solve m = sortBy (comparing snd) . zip indices . toList . flatten . uncurry linearSolveSVD . equations indices $ m
-  where
-    indices = M.keys m
 
 {-
   Example: <https://en.wikipedia.org/wiki/Condorcet_method#Example:_Voting_on_the_location_of_Tennessee's_capital>
@@ -111,25 +91,13 @@ exampleTennessee =
     memphis = 2
     nashville = 3
 
-{-
-voting :: Int -> [[Int]] -> Array (Int, Int) Int
-voting dim vs = runSTArray $ pack . concatMap (\xs -> zip xs (tail xs)) $ vs
-  where
-    pack :: [(Int, Int)] -> ST s (STArray s (Int, Int) Int)
-    pack pairs = do
-        a <- newArray ((1, 1), (dim, dim)) 0
-        forM_ pairs $ \(g, l) ->
-            writeArray a (g, l) . (+ 1) =<< readArray a (g, l)
-        return a
--}
-
 main :: IO ()
 main = do
-    let system = sumEdges'
+    let system = sumEdges
                     $ [ e | (count, order) <- exampleTennessee
                           , (u, v) <- zip order (tail order)
                           , e <- edge count u v
                       ]
     print system
-    print "======"
-    print $ solve' system
+    putStrLn "======"
+    print $ solve system
