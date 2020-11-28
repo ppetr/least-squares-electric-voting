@@ -1,4 +1,6 @@
 {-# OPTIONS_GHC -Wall #-}
+module LeastSquaresVoting (vote) where
+
 import Control.Arrow
 import Data.Hashable (Hashable(..))
 import Data.HashMap.Strict (HashMap)
@@ -74,30 +76,9 @@ solve m = sortBy (comparing snd) . zip is . toList . flatten . uncurry linearSol
   where
     is = indices m
 
-{-
-  Example: <https://en.wikipedia.org/wiki/Condorcet_method#Example:_Voting_on_the_location_of_Tennessee's_capital>
--}
-exampleTennessee :: [(Int, [Int])]
-exampleTennessee =
-    -- (count, choice)
-    [ (42, [ memphis, nashville, chattanooga, knoxville ])
-    , (26, [ nashville, chattanooga, knoxville, memphis ])
-    , (15, [ chattanooga, knoxville, nashville, memphis ])
-    , (17, [ knoxville, chattanooga, nashville, memphis ])
+vote :: (Eq a, Hashable a, Integral n) => [(n, [a])] -> [(a, Double)]
+vote prefs = solve . sumEdges $
+    [ e | (count, order) <- prefs
+        , (u, v) <- zip order (tail order)
+        , e <- edge count u v
     ]
-  where
-    chattanooga = 0
-    knoxville = 1
-    memphis = 2
-    nashville = 3
-
-main :: IO ()
-main = do
-    let system = sumEdges
-                    $ [ e | (count, order) <- exampleTennessee
-                          , (u, v) <- zip order (tail order)
-                          , e <- edge count u v
-                      ]
-    print system
-    putStrLn "======"
-    print $ solve system
