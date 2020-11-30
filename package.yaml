@@ -1,0 +1,49 @@
+name:                least-squares-electric-voting
+version:             0.1.0.0
+github:              "ppetr/least-squares-electric-voting"
+license:             Apache
+author:              "Petr Pudlák"
+
+extra-source-files:
+- README.md
+- docs/*.md
+
+# Metadata used when publishing your package
+synopsis:            Least squares (“electric”) voting system
+category:            Math
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/ppetr/least-squares-electric-voting#readme>
+
+dependencies:
+- base
+- hashable
+- hmatrix
+- unordered-containers
+
+library:
+  source-dirs: src
+
+executables:
+  least-squares-electric-voting-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - least-squares-electric-voting
+
+tests:
+  least-squares-electric-voting-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - least-squares-electric-voting
