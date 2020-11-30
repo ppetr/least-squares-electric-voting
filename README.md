@@ -2,6 +2,8 @@
 
 _Disclaimer: This is not an official Google product._
 
+[![Build Status](https://travis-ci.com/ppetr/least-squares-electric-voting.svg?branch=main)](https://travis-ci.com/ppetr/least-squares-electric-voting)
+
 ## Objective
 
 Describe and explore [properties](https://en.wikipedia.org/wiki/Comparison_of_electoral_systems) of a novel (to the best author’s knowledge) [electoral system](https://en.wikipedia.org/wiki/Electoral_system). It’s intuition is based on simple electrical circuits. It orders candidates by assigning each one a potential in such a way that it minimizes the sum of squares of differences of each voter’s intent.
