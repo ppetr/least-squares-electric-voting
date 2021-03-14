@@ -2,7 +2,7 @@ name:                least-squares-electric-voting
 version:             0.1.0.0
 github:              "ppetr/least-squares-electric-voting"
 license:             Apache
-author:              "Petr Pudlák"
+author:              "Petr P."
 
 extra-source-files:
 - README.md
@@ -46,4 +46,6 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - containers
     - least-squares-electric-voting
+    - QuickCheck

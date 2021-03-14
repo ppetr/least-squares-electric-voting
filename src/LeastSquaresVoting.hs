@@ -11,6 +11,8 @@ import Data.Monoid (Sum(..))
 import Data.Ord (comparing)
 import Numeric.LinearAlgebra (Matrix, (><), flatten, linearSolveSVD, toList)
 
+import Types
+
 -- | Let _(u, v)_ be a pair of candidates in a voter's ordered list. This means
 -- that the voter's intent is that _u_ is ideally ranked a unit _D_ (1V) higher
 -- than _v_. When their potentials are _U_ and _V_, the difference from the intent
@@ -25,7 +27,7 @@ import Numeric.LinearAlgebra (Matrix, (><), flatten, linearSolveSVD, toList)
 -- Partial derivatives
 --   d/dU ... =   2 G (U-V-D)
 --   d/dV ... = - 2 G (U-V-D)
-edge :: (Integral c, Num n) => c -> a -> a -> [(a, [(a, n)], n)] 
+edge :: (Integral c, Num n) => c -> a -> a -> [(a, [(a, n)], n)]
 edge count u v =
     let c = fromIntegral count in
     [ (u, [(u, c), (v, -c)], -c)
@@ -76,9 +78,14 @@ solve m = sortBy (comparing snd) . zip is . toList . flatten . uncurry linearSol
   where
     is = indices m
 
-vote :: (Eq a, Hashable a, Integral n) => [(n, [a])] -> [(a, Double)]
-vote prefs = solve . sumEdges $
-    [ e | (count, order) <- prefs
-        , (u, v) <- zip order (tail order)
-        , e <- edge count u v
-    ]
+vote :: (Eq a, Hashable a, Integral n) => Prefs a n -> [(a, Double)]
+vote (Prefs []) = []
+vote (Prefs prefs@((_, cs) : _))
+    | null edges = zip cs (repeat 0)
+    | otherwise  = solve . sumEdges $ edges
+  where
+    edges =
+      [ e | (count, order) <- prefs
+          , (u, v) <- zip order (tail order)
+          , e <- edge count u v
+      ]

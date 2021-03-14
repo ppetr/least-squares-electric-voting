@@ -2,13 +2,14 @@ import Control.Monad (forM_)
 import Text.Printf (printf)
 
 import LeastSquaresVoting
+import Types
 
 {-
   Example: <https://en.wikipedia.org/wiki/Condorcet_method#Example:_Voting_on_the_location_of_Tennessee's_capital>
 -}
-exampleTennessee :: [(Int, [String])]
-exampleTennessee =
-    -- (count, choice)
+exampleTennessee :: Prefs String Int
+exampleTennessee = Prefs
+    -- (count, ranked list)
     [ (42, [ memphis, nashville, chattanooga, knoxville ])
     , (26, [ nashville, chattanooga, knoxville, memphis ])
     , (15, [ chattanooga, knoxville, nashville, memphis ])

@@ -1,10 +1,8 @@
-cabal-version: 1.12
-
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.28.2.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ba8d1e690bf722cc581865f777a7b19fd5b0dfe42cbdd445995887dc9b29a625
+-- hash: f5dcec7c2a67e2182ac006dbb45c11347591dceb85b276696fe38ed28cc79008
 
 name:           least-squares-electric-voting
 version:        0.1.0.0
@@ -13,15 +11,15 @@ description:    Please see the README on GitHub at <https://github.com/ppetr/lea
 category:       Math
 homepage:       https://github.com/ppetr/least-squares-electric-voting#readme
 bug-reports:    https://github.com/ppetr/least-squares-electric-voting/issues
-author:         Petr Pudlák
-maintainer:     Petr Pudlák
+author:         Petr P.
 license:        Apache
 license-file:   LICENSE
 build-type:     Simple
+cabal-version:  >= 1.10
 extra-source-files:
-    README.md
     docs/code-of-conduct.md
     docs/contributing.md
+    README.md
 
 source-repository head
   type: git
@@ -31,6 +29,8 @@ library
   exposed-modules:
       LeastSquaresVoting
       Lib
+      Properties
+      Types
   other-modules:
       Paths_least_squares_electric_voting
   hs-source-dirs:
@@ -66,7 +66,9 @@ test-suite least-squares-electric-voting-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base
+      QuickCheck
+    , base
+    , containers
     , hashable
     , hmatrix
     , least-squares-electric-voting
