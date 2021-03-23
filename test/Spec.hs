@@ -22,9 +22,10 @@ toPrefs = Prefs . map swap . M.toList . getTestPrefs
 instance Arbitrary TestPrefs where
     arbitrary = TestPrefs . M.fromListWith (+) <$> do
         size <- getSize
-        let list = take size ['a'..]
+        let candidates = ceiling (sqrt $ fromIntegral size)
+        let list = take candidates ['a'..]
         len <- choose (1, size)
-        replicateM len ((,) <$> shuffle list <*> choose (1, 1000))
+        replicateM len ((,) <$> shuffle list <*> choose (1, 100))
     shrink (TestPrefs ps) | M.null ps = []
     shrink (TestPrefs ps) = map TestPrefs $
         -- Drop one of the preferences.
