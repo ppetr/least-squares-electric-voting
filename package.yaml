@@ -16,7 +16,10 @@ name:                least-squares-electric-voting
 version:             0.1.0.0
 github:              "ppetr/least-squares-electric-voting"
 license:             Apache
+license-file:        LICENSE
 author:              "Petr P."
+maintainer:          "petr.mvd+github@gmail.com"
+copyright:           "2021 Google Inc."
 
 extra-source-files:
 - README.md
