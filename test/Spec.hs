@@ -106,17 +106,16 @@ prop_not_liia = head result =/= head (normVote withoutLeast)
   result       = normVote example
   withoutLeast = removeCandidate (last result) example
 
--- | Verifies that the winner is a member of the Smith set.
--- Implied by 'prop_smith_dominated'.
-prop_smith :: TestPrefs -> Property
-prop_smith ts =
-  (not $ null smith)
-    ==> counterexample ("Smith set: " ++ show smith)
-    .   counterexample ("Winner: " ++ show winner)
-    $   elem winner smith
+kSmithNonWinner :: TestPrefs
+kSmithNonWinner = TestPrefs $ M.fromList [("abc", 2), ("bca", 55), ("cba", 56)]
+
+-- | Verifies that the winner not always a member of the Smith set.
+-- Implies 'prop_smith_dominated'.
+prop_smith :: Property
+prop_smith = once $ not (null smith) .&. notElem winner smith
  where
-  winner = head $ normVote ts
-  smith  = smithSet $ toPrefs ts
+  winner = head $ normVote kSmithNonWinner
+  smith  = smithSet $ toPrefs kSmithNonWinner
 
 -- | Returns a `Just` value if both the Smith set of the input and its
 -- complement are nonempty.
@@ -128,18 +127,20 @@ smith_separable ts = do
   guard (not $ null dominated)
   Just (smith, dominated)
 
--- | Verifies that the winner is independent of Smith-dominated candidates.
-prop_smith_dominated :: TestPrefs -> Property
-prop_smith_dominated ts =
-  let separated'm = smith_separable ts
-  in  isJust separated'm
-        ==> let Just (smith, dominated) = separated'm
-            in  counterexample ("Smith set: " ++ show smith)
-                . counterexample ("Dominated: " ++ show dominated)
-                . forAll (elements dominated)
-                $ \c ->
-                    let ts' = removeCandidate c ts
-                    in  (head . normVote $ ts) === (head . normVote $ ts')
+-- | Verifies that the winner is not always independent of Smith-dominated
+-- candidates.
+prop_smith_dominated :: Property
+prop_smith_dominated =
+  once
+    $ let
+        Just (smith, dominated) = smith_separable kSmithNonWinner
+        c                       = 'c'
+        winner                  = head . normVote
+      in
+        elem c dominated
+          .&. (winner kSmithNonWinner =/= winner
+                (removeCandidate c kSmithNonWinner)
+              )
 
 return []
 main :: IO ()
