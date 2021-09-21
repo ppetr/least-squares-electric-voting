@@ -110,24 +110,27 @@ prop_smith ts =
     winner = head $ normVote ts
     smith = smithSet $ toPrefs ts
 
--- | Generates preferences for which both the Smith set and its complement are
--- nonempty.
-smith_separable :: Gen (TestPrefs, [Char], [Char])
-smith_separable = arbitrary `suchThatMap` \ts -> do
+-- | Returns a `Just` value if both the Smith set of the input and its
+-- complement are nonempty.
+smith_separable :: TestPrefs -> Maybe ([Char], [Char])
+smith_separable ts = do
     let smith = smithSet (toPrefs ts)
     guard (not $ null smith)
     let dominated = candidates ts L.\\ smith
     guard (not $ null dominated)
-    Just (ts, smith, dominated)
+    Just (smith, dominated)
 
 -- | Verifies that the winner is independent of Smith-dominated candidates.
-prop_smith_dominated :: Property
-prop_smith_dominated = forAll smith_separable $ \(ts, smith, dominated) ->
-    counterexample ("Smith set: " ++ show smith)
-    . counterexample ("Dominated: " ++ show dominated)
-    . forAll (elements dominated) $ \c ->
-    let ts' = removeCandidate c ts in
-    (head . normVote $ ts) === (head . normVote $ ts')
+prop_smith_dominated :: TestPrefs -> Property
+prop_smith_dominated ts =
+    let separated'm = smith_separable ts
+    in isJust separated'm ==>
+        let Just (smith, dominated) = separated'm
+        in counterexample ("Smith set: " ++ show smith)
+            . counterexample ("Dominated: " ++ show dominated)
+            . forAll (elements dominated) $ \c ->
+                let ts' = removeCandidate c ts
+                in (head . normVote $ ts) === (head . normVote $ ts')
 
 return []
 main :: IO ()
