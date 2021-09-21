@@ -31,18 +31,18 @@ import qualified Data.Set as S
 
 import Types
 
--- | Pairs each candidate with a set of other candidates beaten in a
+-- | Pairs each candidate with a set of other candidates beaten or equal in a
 -- head-to-head election.
 orderedPairs :: (Ord a, Num n, Ord n) => Prefs a n -> [(a, [a])]
 orderedPairs (Prefs ps) =
-    M.toList . M.map (M.keys . M.filter (> 0))
+    M.toList . M.map (M.keys . M.filter (>= 0))
     . M.fromListWith (M.unionWith (+))
     . concatMap (uncurry pairs) $ ps
   where
     pairs _ [] = []
     pairs n (x : xs)
         = concat [[(x, M.singleton y n),
-                   (y, M.singleton y (-n))] | y <- xs] ++ pairs n xs
+                   (y, M.singleton x (-n))] | y <- xs] ++ pairs n xs
 
 -- | Computes the Smith set of a given set of preferences.
 -- See https://en.wikipedia.org/wiki/Smith_set
